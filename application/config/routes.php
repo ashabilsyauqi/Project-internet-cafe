@@ -54,3 +54,15 @@ $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 $route['admin'] = 'admin/overview';
 
+$route['admin/makanan'] = 'admin/makanan/index';
+$route['admin/makanan/create'] = 'admin/makanan/create';
+$route['admin/makanan/store'] = 'admin/makanan/store';
+
+$route['admin/makanan/edit/(:any)'] = 'admin/makanan/edit/$1';
+$route['admin/makanan/update/(:any)'] = 'admin/makanan/update/$1';
+$route['admin/makanan/delete/(:any)'] = 'admin/makanan/delete/$1';
+
+
+
+
+
