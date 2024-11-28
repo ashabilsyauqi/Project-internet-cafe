@@ -64,5 +64,14 @@ $route['admin/makanan/delete/(:any)'] = 'admin/makanan/delete/$1';
 
 
 
+$route['admin/pc'] = 'admin/pc/index';
+$route['admin/pc/create'] = 'admin/pc/create';
+$route['admin/pc/edit/(:num)'] = 'admin/pc/edit/$1';
+$route['admin/pc/delete/(:num)'] = 'admin/pc/delete/$1';
+
+
+
+
+
 
 
