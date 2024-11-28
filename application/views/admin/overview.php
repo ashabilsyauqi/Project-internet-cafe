@@ -66,10 +66,11 @@
                          
                           
                             <div class="sb-sidenav-menu-heading">Jajanan</div>
-                            <a class="nav-link" href="charts.html">
+                            <a class="nav-link" href="<?= base_url('admin/makanan'); ?>">
                                 <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                                 Data Jajanan
                             </a>
+
                         </div>
                     </div>
                     <div class="sb-sidenav-footer">
