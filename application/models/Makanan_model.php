@@ -3,9 +3,19 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Makanan_model extends CI_Model {
 
-    public function get_all_makanan()
+    // Fetch all available foods
+    public function getAllMakanan()
     {
-        return $this->db->get('Makanan')->result();
+        return $this->db->get('Makanan')->result_array();
+    }
+
+    // Get total price for selected foods
+    public function getTotalHargaMakanan($ids)
+    {
+        $this->db->select_sum('harga_makanan', 'total_harga');
+        $this->db->where_in('id_makanan', $ids);
+        $result = $this->db->get('Makanan')->row_array();
+        return $result['total_harga'];
     }
 
     public function get_makanan_by_id($id)

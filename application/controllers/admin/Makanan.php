@@ -8,11 +8,12 @@ class Makanan extends CI_Controller {
         parent::__construct();
         $this->load->model('Makanan_model');
         $this->load->helper('form'); // Load the form helper here
+        $this->load->library('upload'); // Load the upload library here
     }
 
     public function index()
     {
-        $data['makanan'] = $this->Makanan_model->get_all_makanan();
+        $data['makanan'] = $this->Makanan_model->getAllMakanan();
         $this->load->view('admin/makanan/index', $data);
     }
 
@@ -28,7 +29,7 @@ class Makanan extends CI_Controller {
         $config['allowed_types']        = 'png|jpg|gif';
         $config['max_size']             = 2048;
 
-        $this->load->library('upload', $config);
+        $this->upload->initialize($config);
 
         if ( ! $this->upload->do_upload('foto_makanan')) {
             $error = array('error' => $this->upload->display_errors());
@@ -74,8 +75,9 @@ class Makanan extends CI_Controller {
         $config['allowed_types']        = 'png|jpg|gif';
         $config['max_size']             = 2048;
 
-        $this->load->library('upload', $config);
+        $this->upload->initialize($config);
 
+        // Check if a new file is uploaded, otherwise use the old photo
         if ( ! $this->upload->do_upload('foto_makanan')) {
             // If no new file is uploaded, keep the old photo
             $foto = $this->input->post('old_foto');

@@ -1,133 +1,135 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-
-
-// application/controllers/admin/Booking.php
-// defined('BASEPATH') OR exit('No direct script access allowed');
-
 class Booking extends CI_Controller {
 
     public function __construct()
     {
         parent::__construct();
-        // Memuat model Booking_model dan Pc_model
         $this->load->model('Booking_model');
-        $this->load->model('Pc_model');  // Tambahkan ini
+        $this->load->model('Pc_model'); // To fetch PC data
+        $this->load->model('Makanan_model'); // To fetch food data
     }
 
-    // Menampilkan semua booking
-    public function index()
-    {
-        $data['bookings'] = $this->Booking_model->get_all_bookings();
+    // Show all bookings
+    public function index() {
+        // Fetch all bookings from the model
+        $data['bookings'] = $this->Booking_model->get_all_bookings(); // This ensures you get all bookings
+
+        // If there are no bookings, set an empty array
+        if (empty($data['bookings'])) {
+            $data['bookings'] = [];
+        }
+
+        // Load the view with data
         $this->load->view('admin/booking/index', $data);
     }
+    
 
-
-
+    // Form to create a new booking
     public function create()
     {
-        if ($this->input->post('id_pc')) {
-            $pc_id = $this->input->post('id_pc');
-            
-            // Validasi apakah PC tersedia
-            if (!$this->Booking_model->is_pc_available($pc_id)) {
-                $this->session->set_flashdata('error', 'PC yang dipilih sudah ter-booking.');
-                redirect('admin/booking/create');
-            }
-    
-            // Menyimpan data booking ke tabel booking_pc
-            $booking_data = [
-                'nama_penyewa' => $this->input->post('nama_penyewa'),
-                'lama_menyewa' => $this->input->post('lama_menyewa'),
-                'id_pc' => $pc_id,
-                'status' => 'active', // Status booking
-            ];
-    
-            // Insert data booking ke tabel booking_pc
-            $this->Booking_model->createBooking($booking_data);
-    
-            // Update status_pc menjadi 'active'
-            $this->Booking_model->update_pc_status($pc_id);
-    
-            // Redirect setelah berhasil booking
-            $this->session->set_flashdata('success', 'Booking berhasil dibuat!');
-            redirect('admin/booking');
-        }
-    
-        // Ambil daftar PC dari model Pc_model
-        $data['pcs'] = $this->Pc_model->getAllPc();
-    
+        $data['pcs'] = $this->Pc_model->getAllPc(); // Fetch all PC data
+        $data['makanan'] = $this->Makanan_model->getAllMakanan(); // Fetch all food data
         $this->load->view('admin/booking/create', $data);
     }
-    
-    
 
+    // Store a new booking
+    public function store()
+    {
+        // Get data from form
+        $nama_penyewa = $this->input->post('nama_penyewa');
+        $lama_menyewa = $this->input->post('lama_menyewa');
+        $id_pc = $this->input->post('pc_id');  
+        $tanggal_booking = $this->input->post('tanggal_booking');
+        $jajanan = $this->input->post('jajanan');
     
+        // Insert data into the array for saving
+        $data = array(
+            'nama_penyewa' => $nama_penyewa,
+            'lama_menyewa' => $lama_menyewa,
+            'id_pc' => $id_pc,
+            'tanggal_booking' => $tanggal_booking,
+            'jajanan' => $jajanan
+        );
+    
+        // Insert data to database using model
+        $insert = $this->Booking_model->insert_booking($data);
+    
+        if ($insert) {
+            // Redirect to index page after success
+            redirect('admin/booking');
+        } else {
+            // Display error message if failed
+            echo "Data failed to save!";
+        }
+    }
+
+    // Form to edit an existing booking
     public function edit($id)
     {
-        $data['booking'] = $this->Booking_model->getBookingById($id);
+        $data['booking'] = $this->Booking_model->get_booking_by_id($id);
         $data['pcs'] = $this->Pc_model->getAllPc();
-        $data['harga_per_jam'] = 3000; // Harga per jam
+        $data['makanan'] = $this->Makanan_model->getAllMakanan();
         $this->load->view('admin/booking/edit', $data);
     }
 
-
-
-    // Form untuk menambah booking baru
-    // public function create()
-    // {
-    //     $this->load->view('admin/booking/create');
-    // }
-
-    // Menyimpan booking baru
-    public function store()
-    {
-        $tanggal_booking = $this->input->post('tanggal_booking');
-        $pc_id = $this->input->post('pc_id');
-    
-        // Cek apakah PC sudah terbooking pada tanggal tertentu
-        if ($this->Booking_model->is_pc_available($pc_id, $tanggal_booking)) {
-            $data = [
-                'nama_penyewa' => $this->input->post('nama_penyewa'),
-                'lama_menyewa' => $this->input->post('lama_menyewa'),
-                'pc_id' => $pc_id,
-                'tanggal_booking' => $tanggal_booking,
-            ];
-    
-            $this->Booking_model->create_booking($data);
-            redirect('admin/booking');
-        } else {
-            $this->session->set_flashdata('error', 'PC sudah terbooking pada tanggal ini.');
-            redirect('admin/booking/create');
-        }
-    }
-    
+    // Update an existing booking
     public function update($id)
     {
+        $pc_id = $this->input->post('id_pc');
+        $food_id = $this->input->post('jajanan');
+        $lama_menyewa = $this->input->post('lama_menyewa');
         $tanggal_booking = $this->input->post('tanggal_booking');
-        $pc_id = $this->input->post('pc_id');
-    
-        // Cek apakah PC sudah terbooking pada tanggal tertentu
-        if ($this->Booking_model->is_pc_available($pc_id, $tanggal_booking)) {
-            $data = [
-                'nama_penyewa' => $this->input->post('nama_penyewa'),
-                'lama_menyewa' => $this->input->post('lama_menyewa'),
-                'pc_id' => $pc_id,
-                'tanggal_booking' => $tanggal_booking,
-            ];
-    
-            $this->Booking_model->update_booking($id, $data);
-            redirect('admin/booking');
-        } else {
-            $this->session->set_flashdata('error', 'PC sudah terbooking pada tanggal ini.');
+
+        // Fetch selected PC price
+        $pc_data = $this->Pc_model->getPcById($pc_id);
+        if ($pc_data === null) {
+            $this->session->set_flashdata('error', 'PC not found.');
             redirect('admin/booking/edit/' . $id);
         }
+        $harga_sewa = $pc_data['harga_sewa'];
+
+        // Fetch selected food price
+        $food_data = $this->Makanan_model->get_food_by_id($food_id);
+        if ($food_data === null) {
+            $this->session->set_flashdata('error', 'Food item not found.');
+            redirect('admin/booking/edit/' . $id);
+        }
+        $harga_makanan = $food_data['harga'];
+
+        // Calculate total price
+        $harga_total = ($harga_sewa * $lama_menyewa) + $harga_makanan;
+
+        // Validate if the selected PC is available
+        if (!$this->Booking_model->is_pc_available($pc_id, $tanggal_booking, $id)) {
+            $this->session->set_flashdata('error', 'PC is already booked on this date.');
+            redirect('admin/booking/edit/' . $id);
+        }
+
+        // Prepare booking data
+        $booking_data = [
+            'nama_penyewa' => $this->input->post('nama_penyewa'),
+            'lama_menyewa' => $lama_menyewa,
+            'id_pc' => $pc_id,
+            'tanggal_booking' => $tanggal_booking,
+            'harga_total' => $harga_total,
+            'jajanan' => $food_id,
+        ];
+
+        // Update booking data in the database
+        $this->Booking_model->update_booking($id, $booking_data);
+
+        // Set success message and redirect
+        $this->session->set_flashdata('success', 'Booking updated successfully.');
+        redirect('admin/booking');
     }
-    // Menghapus booking
+
+    // Delete a booking
     public function delete($id)
     {
         $this->Booking_model->delete_booking($id);
+        $this->session->set_flashdata('success', 'Booking deleted successfully.');
         redirect('admin/booking');
     }
 }
