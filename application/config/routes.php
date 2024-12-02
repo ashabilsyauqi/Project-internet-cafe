@@ -71,6 +71,16 @@ $route['admin/pc/delete/(:num)'] = 'admin/pc/delete/$1';
 
 
 
+// application/config/routes.php
+$route['admin/booking'] = 'admin/booking/index';
+$route['admin/booking/create'] = 'admin/booking/create';
+$route['admin/booking/store'] = 'admin/booking/store';
+$route['admin/booking/edit/(:num)'] = 'admin/booking/edit/$1';
+$route['admin/booking/update/(:num)'] = 'admin/booking/update/$1';
+$route['admin/booking/delete/(:num)'] = 'admin/booking/delete/$1';
+
+
+
 
 
 
