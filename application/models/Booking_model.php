@@ -8,6 +8,28 @@ class Booking_model extends CI_Model {
     {
         parent::__construct();
     }
+    public function is_pc_available($pc_id)
+    {
+        // Cek apakah status_pc untuk PC tertentu adalah 'active'
+        $this->db->where('id_pc', $pc_id);
+        $this->db->where('status_pc', 'active'); // Sesuaikan dengan nama kolom di tabel
+        $query = $this->db->get('pc');
+    
+        return $query->num_rows() === 0; // Jika tidak ada hasil, PC tersedia
+    }
+    
+
+
+    public function update_pc_status($pc_id)
+    {
+        $data = [
+            'status_pc' => 'active', // Sesuaikan dengan nama kolom di tabel
+        ];
+
+        $this->db->where('id_pc', $pc_id);
+        return $this->db->update('pc', $data); // Update status_pc di tabel pc
+    }
+
 
     // Fungsi untuk mendapatkan semua booking
     public function get_all_bookings()
