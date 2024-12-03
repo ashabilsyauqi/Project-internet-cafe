@@ -84,7 +84,7 @@
 
 <div class="form-group">
     <label for="jajanan">Pilih Makanan (Optional):</label>
-    <select name="jajanan" required>
+    <select name="jajanan" >
         <option value="">Pilih Makanan</option>
         <?php foreach ($makanan as $item): ?>
             <option value="<?= $item['id_makanan'] ?>" data-harga="<?= $item['harga_makanan'] ?>">

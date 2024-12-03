@@ -16,7 +16,7 @@ class Booking_model extends CI_Model {
     // Get booking by ID
     public function get_booking_by_id($id)
     {
-        return $this->db->get_where('booking_pc', ['id_booking' => $id])->row_array(); // Ensure row is returned for a single booking
+        return $this->db->get_where('booking_pc', ['id' => $id])->row_array(); // Ensure row is returned for a single booking
     }
 
     // Insert a new booking
@@ -28,14 +28,14 @@ class Booking_model extends CI_Model {
     // Update an existing booking
     public function update_booking($id, $data)
     {
-        $this->db->where('id_booking', $id);
+        $this->db->where('id', $id);
         return $this->db->update('booking_pc', $data);
     }
 
     // Delete a booking
     public function delete_booking($id)
     {
-        return $this->db->delete('booking_pc', ['id_booking' => $id]);
+        return $this->db->delete('booking_pc', ['id' => $id]);
     }
 
     // Check if PC is available for booking

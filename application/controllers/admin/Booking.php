@@ -34,7 +34,6 @@ class Booking extends CI_Controller {
         $this->load->view('admin/booking/create', $data);
     }
 
-    // Store a new booking
     public function store()
     {
         // Get data from form
@@ -44,13 +43,29 @@ class Booking extends CI_Controller {
         $tanggal_booking = $this->input->post('tanggal_booking');
         $jajanan = $this->input->post('jajanan');
     
+        // Get PC price from database
+        $pc = $this->db->get_where('PC', ['id_pc' => $id_pc])->row_array();
+
+
+        // $harga_pc = $pc['harga'] ?? 0; // Default 0 if not found
+        $harga_pc = 3000; // Default 0 if not found
+
+    
+        // Get snack price from database
+        $makanan = $this->db->get_where('Makanan', ['id_makanan' => $jajanan])->row_array();
+        $harga_jajanan = $makanan['harga_makanan'] ?? 0; // Default 0 if not found
+    
+        // Calculate total price
+        $harga_total = ($harga_pc * $lama_menyewa) + $harga_jajanan;
+    
         // Insert data into the array for saving
         $data = array(
             'nama_penyewa' => $nama_penyewa,
             'lama_menyewa' => $lama_menyewa,
             'id_pc' => $id_pc,
             'tanggal_booking' => $tanggal_booking,
-            'jajanan' => $jajanan
+            'jajanan' => $jajanan,
+            'harga_total' => $harga_total // Add total price to the data array
         );
     
         // Insert data to database using model
@@ -58,12 +73,14 @@ class Booking extends CI_Controller {
     
         if ($insert) {
             // Redirect to index page after success
+            $this->session->set_flashdata('success', 'Data berhasil disimpan!');
             redirect('admin/booking');
         } else {
             // Display error message if failed
             echo "Data failed to save!";
         }
     }
+    
 
     // Form to edit an existing booking
     public function edit($id)
