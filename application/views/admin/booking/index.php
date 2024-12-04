@@ -8,6 +8,10 @@
 <body>
 
     <h1>Booking List</h1>
+    <a href="<?= base_url('admin/booking/create') ?>" class="btn btn-primary">
+        Buat Booking
+    </a>
+
 
     <?php if (!empty($bookings)): ?>
         <table>
@@ -40,8 +44,8 @@
                         <td><?php echo isset($booking['makanan']) ? $booking['makanan'] : 'None'; ?></td>
 
                         
-                        <td>Rp <?php echo isset($booking['harga_total']) ? $booking['harga_total'] : 'N/A'; ?></td>
-                        <td>Rp <?php echo isset($booking['harga_total']) ? $booking['harga_total'] : 'N/A'; ?></td>
+                        <td>Rp <?php echo isset($booking['harga_makanan']) ? $booking['harga_makanan'] : 'N/A'; ?></td>
+                        <td>Rp <?php echo isset($booking['harga_sewa']) ? $booking['harga_sewa'] : 'N/A'; ?></td>
                         <td>Rp <?php echo isset($booking['harga_total']) ? $booking['harga_total'] : 'N/A'; ?></td>
 
                         <td>

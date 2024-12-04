@@ -8,6 +8,7 @@ class Pc extends CI_Controller
         parent::__construct();
         $this->load->model('Pc_model');
     }
+    
 
     // List all PCs
     public function index()

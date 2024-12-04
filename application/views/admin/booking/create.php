@@ -70,9 +70,13 @@
             <label for="pc_id">Pilih PC:</label>
             <select name="pc_id" required>
                 <option value="">Pilih PC</option>
-                <?php foreach ($pcs as $pc): ?>
-                    <option value="<?= $pc['id_pc'] ?>"><?= $pc['nomor_pc'] ?></option>
-                <?php endforeach; ?>
+                <?php if (!empty($pcs)): ?>
+                    <?php foreach ($pcs as $pc): ?>
+                        <option value="<?= $pc['id_pc'] ?>"><?= $pc['nomor_pc'] ?></option>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <option value="">Tidak ada PC tersedia</option>
+                <?php endif; ?>
             </select>
         </div>
 

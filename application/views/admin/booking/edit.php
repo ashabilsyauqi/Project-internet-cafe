@@ -4,29 +4,100 @@
 <head>
     <meta charset="UTF-8">
     <title>Edit Booking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
     <h1>Edit Booking</h1>
-    <!-- application/views/admin/booking/edit.php -->
 
-    <form action="<?php echo site_url('admin/booking/update/'.$booking['id']); ?>" method="post">
-        <label for="nama_penyewa">Nama Penyewa:</label><br>
-        <input type="text" name="nama_penyewa" id="nama_penyewa" value="<?php echo $booking['nama_penyewa']; ?>" required><br><br>
+    <form action="<?= base_url('admin/booking/update/'.$booking['id']) ?>" method="post">
+        
+        <div class="form-group">
+            <label for="nama_penyewa">Nama Penyewa:</label>
+            <input type="text" name="nama_penyewa" value="<?= $booking['nama_penyewa'] ?>" required placeholder="Masukkan Nama Penyewa">
+        </div>
 
-        <label for="lama_menyewa">Lama Menyewa (jam):</label><br>
-        <input type="number" name="lama_menyewa" id="lama_menyewa" value="<?php echo $booking['lama_menyewa']; ?>" required><br><br>
+        <div class="form-group">
+            <label for="lama_menyewa">Lama Menyewa (jam):</label>
+            <input type="number" name="lama_menyewa" value="<?= $booking['lama_menyewa'] ?>" required placeholder="Masukkan Lama Menyewa (dalam jam)">
+        </div>
 
-        <label for="pc_id">PC:</label><br>
-        <select name="pc_id" id="pc_id" required>
-            <?php foreach ($pcs as $pc): ?>
-                <option value="<?php echo $pc['id_pc']; ?>" <?php echo ($pc['id_pc'] == $booking['pc_id']) ? 'selected' : ''; ?>>
-                    <?php echo 'PC #' . $pc['id_pc']; ?>
-                </option>
-            <?php endforeach; ?>
-        </select><br><br>
+        <div class="form-group">
+            <label for="pc_id">Pilih PC:</label>
+            <select name="pc_id" required>
+                <option value="">Pilih PC</option>
+                <?php foreach ($pcs as $pc): ?>
+                    <option value="<?= $pc['id_pc'] ?>" <?= $booking['id_pc'] == $pc['id_pc'] ? 'selected' : '' ?>>
+                        <?= $pc['nomor_pc'] ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
 
-        <label for="tanggal_booking">Tanggal Booking:</label><br>
-        <input type="date" name="tanggal_booking" id="tanggal_booking" value="<?php echo $booking['tanggal_booking']; ?>" required><br><br>
+        <div class="form-group">
+            <label for="tanggal_booking">Tanggal Booking:</label>
+            <input type="date" name="tanggal_booking" value="<?= $booking['tanggal_booking'] ?>" required>
+        </div>
+
+        <div class="form-group">
+            <label for="jajanan">Pilih Makanan (Optional):</label>
+            <select name="jajanan">
+                <option value="">Pilih Makanan</option>
+                <?php foreach ($makanan as $item): ?>
+                    <option value="<?= $item['id_makanan'] ?>" 
+                        <?= $booking['jajanan'] == $item['id_makanan'] ? 'selected' : '' ?> 
+                        data-harga="<?= $item['harga_makanan'] ?>">
+                        <?= $item['nama_makanan'] ?> - Rp<?= number_format($item['harga_makanan'], 0, ',', '.') ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <input type="hidden" name="<?=$this->security->get_csrf_token_name();?>" value="<?=$this->security->get_csrf_hash();?>" />
 
         <button type="submit">Update</button>
     </form>

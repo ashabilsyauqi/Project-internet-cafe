@@ -3,6 +3,38 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Pc_model extends CI_Model
 {
+
+
+    public function update_pc_status($id_pc, $status)
+    {
+        $data = [
+            'status_pc' => $status
+        ];
+
+        $this->db->where('id_pc', $id_pc);
+        return $this->db->update('PC', $data); // Update status PC di tabel pc
+    }
+
+
+    public function getAvailablePc()
+    {
+        $this->db->where('status_pc', 'Available');
+        $query = $this->db->get('PC');
+        
+        // Debugging
+        if ($query->num_rows() > 0) {
+            return $query->result_array(); // Mengembalikan hasil sebagai array
+        } else {
+            // Jika tidak ada PC yang available
+            log_message('debug', 'Tidak ada PC yang tersedia.');
+            return []; // Mengembalikan array kosong
+        }
+    }
+    
+
+
+
+
     // Fetch all PCs
     public function getAllPc()
     {

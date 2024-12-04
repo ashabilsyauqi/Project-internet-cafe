@@ -3,6 +3,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Booking_model extends CI_Model {
 
+    public function get_all_pcs()
+{
+    $this->db->select('id_pc, nomor_pc'); // Mengambil id dan nomor pc
+    $this->db->from('PC'); // Tabel PC
+    return $this->db->get()->result_array();
+}
+
+
     // Get all bookings with the necessary details
     public function get_all_bookings()
     {
@@ -46,7 +54,7 @@ class Booking_model extends CI_Model {
         $this->db->where('tanggal_booking', $tanggal_booking);
 
         if ($exclude_booking_id) {
-            $this->db->where('id_booking !=', $exclude_booking_id);
+            $this->db->where('id !=', $exclude_booking_id);
         }
 
         $query = $this->db->get();
