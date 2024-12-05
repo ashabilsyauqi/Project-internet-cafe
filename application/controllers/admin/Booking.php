@@ -42,6 +42,9 @@ class Booking extends CI_Controller {
         $harga_jajanan = $makanan['harga_makanan'] ?? 0;
         $harga_total = ($harga_pc * $input['lama_menyewa']) + $harga_jajanan;
 
+        // Hitung waktu berakhir
+        $end_time = date('Y-m-d H:i:s', strtotime("+{$input['lama_menyewa']} hours"));
+
         // Prepare booking data
         $data = [
             'nama_penyewa' => $input['nama_penyewa'],
@@ -50,7 +53,8 @@ class Booking extends CI_Controller {
             'harga_sewa' => $harga_pc * $input['lama_menyewa'],
             'harga_makanan' => $harga_jajanan,
             'jajanan' => $input['jajanan'],
-            'harga_total' => $harga_total
+            'harga_total' => $harga_total,
+            'end_time' => $end_time // Simpan waktu berakhir
         ];
 
         // Insert booking and update PC status
@@ -97,6 +101,9 @@ class Booking extends CI_Controller {
             redirect(' admin/booking/edit/' . $id);
         }
 
+        // Hitung waktu berakhir
+        $end_time = date('Y-m-d H:i:s', strtotime("+{$input['lama_menyewa']} hours"));
+
         // Prepare updated booking data
         $data = [
             'nama_penyewa' => $input['nama_penyewa'],
@@ -105,7 +112,8 @@ class Booking extends CI_Controller {
             'harga_sewa' => $harga_pc * $input['lama_menyewa'],
             'harga_makanan' => $harga_jajanan,
             'jajanan' => $input['jajanan'],
-            'harga_total' => $harga_total
+            'harga_total' => $harga_total,
+            'end_time' => $end_time // Simpan waktu berakhir
         ];
 
         // Update booking and change PC status to 'in use'
@@ -126,12 +134,30 @@ class Booking extends CI_Controller {
 
     public function delete($id)
     {
+        $booking = $this->Booking_model->get_booking_by_id($id);
         if ($this->Booking_model->delete_booking($id)) {
+            // Update the PC status to 'Available'
+            $this->Pc_model->update_pc_status($booking['id_pc'], 'Available');
             $this->session->set_flashdata('success', 'Booking successfully deleted.');
         } else {
             $this->session->set_flashdata('error', 'Failed to delete booking.');
         }
 
         redirect('admin/booking');
+    }
+
+    public function update_pc_status()
+    {
+        // Ambil semua booking yang sudah berakhir
+        $this->db->where('end_time <', date('Y-m-d H:i:s'));
+        $bookings = $this->db->get('booking_pc')->result_array(); // Ganti nama tabel di sini
+
+        foreach ($bookings as $booking) {
+            // Update status PC menjadi 'Available'
+            $this->Pc_model->update_pc_status($booking['id_pc'], 'Available');
+
+            // Hapus booking yang sudah berakhir (opsional)
+            $this->Booking_model->delete_booking($booking['id_booking']);
+        }
     }
 }

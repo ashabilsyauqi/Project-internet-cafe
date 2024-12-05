@@ -4,12 +4,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Booking_model extends CI_Model {
 
     public function get_all_pcs()
-{
-    $this->db->select('id_pc, nomor_pc'); // Mengambil id dan nomor pc
-    $this->db->from('PC'); // Tabel PC
-    return $this->db->get()->result_array();
-}
-
+    {
+        $this->db->select('id_pc, nomor_pc'); // Mengambil id dan nomor pc
+        $this->db->from('PC'); // Tabel PC
+        return $this->db->get()->result_array();
+    }
 
     // Get all bookings with the necessary details
     public function get_all_bookings()
@@ -47,11 +46,16 @@ class Booking_model extends CI_Model {
     }
 
     // Check if PC is available for booking
-    public function is_pc_available($pc_id, $tanggal_booking, $exclude_booking_id = null)
+    public function is_pc_available($pc_id, $lama_menyewa, $exclude_booking_id = null)
     {
+        // Hitung waktu booking
+        $start_time = date('Y-m-d H:i:s');
+        $end_time = date('Y-m-d H:i:s', strtotime("+{$lama_menyewa} hours"));
+
         $this->db->from('booking_pc');
         $this->db->where('id_pc', $pc_id);
-        $this->db->where('tanggal_booking', $tanggal_booking);
+        $this->db->where('end_time >', $start_time); // Pastikan booking yang ada tidak bertabrakan
+        $this->db->where('end_time <', $end_time); // Pastikan booking yang ada tidak bertabrakan
 
         if ($exclude_booking_id) {
             $this->db->where('id !=', $exclude_booking_id);

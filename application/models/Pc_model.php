@@ -3,8 +3,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Pc_model extends CI_Model
 {
-
-
     public function update_pc_status($id_pc, $status)
     {
         $data = [
@@ -14,7 +12,6 @@ class Pc_model extends CI_Model
         $this->db->where('id_pc', $id_pc);
         return $this->db->update('PC', $data); // Update status PC di tabel pc
     }
-
 
     public function getAvailablePc()
     {
@@ -30,10 +27,6 @@ class Pc_model extends CI_Model
             return []; // Mengembalikan array kosong
         }
     }
-    
-
-
-
 
     // Fetch all PCs
     public function getAllPc()
@@ -58,12 +51,5 @@ class Pc_model extends CI_Model
     {
         $this->db->where('id_pc', $id_pc);
         return $this->db->update('PC', $data);  // Using "PC" as table name
-    }
-
-    // Delete PC
-    public function deletePc($id_pc)
-    {
-        $this->db->where('id_pc', $id_pc);
-        return $this->db->delete('PC');  // Using "PC" as table name
     }
 }
