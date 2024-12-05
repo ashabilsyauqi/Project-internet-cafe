@@ -13,6 +13,9 @@ class Booking extends CI_Controller {
 
     public function index()
     {
+        // Panggil fungsi untuk memperbarui status PC
+        $this->update_pc_status();
+
         $data['bookings'] = $this->Booking_model->get_all_bookings();
         $this->load->view('admin/booking/index', $data);
     }
@@ -59,10 +62,9 @@ class Booking extends CI_Controller {
         $harga_jajanan = $makanan['harga_makanan'] ?? 0;
         $lama_menyewa = (int)$input['lama_menyewa']; // Pastikan integer
         $harga_total = ($harga_pc * $lama_menyewa) + $harga_jajanan;
-    
-        // Hitung waktu selesai (end_time) dengan timezone yang sudah diset
-        $lama_menyewa_dalam_detik = $lama_menyewa * 3600; // Konversi jam ke detik
-        $end_time = date('Y-m-d H:i:s', time() + $lama_menyewa_dalam_detik);
+
+        $created_at = date('Y-m-d H:i:s'); // Waktu saat ini
+        $end_time = date('Y-m-d H:i:s', strtotime("+{$lama_menyewa} hour", strtotime($created_at)));
     
         // Siapkan data untuk dimasukkan ke tabel booking
         $data = [
@@ -74,10 +76,10 @@ class Booking extends CI_Controller {
             'jajanan'        => $input['jajanan'] ?? null,
             'harga_total'    => $harga_total,
             'end_time'       => $end_time,
-            'created_at'     => date('Y-m-d H:i:s'), // Waktu saat data dibuat sesuai dengan zona waktu
-            'updated_at'     => date('Y-m-d H:i:s')  // Waktu saat data di-update sesuai dengan zona waktu
+            'created_at'     => $created_at,
+            'updated_at'     => date('Y-m-d H:i:s')
         ];
-    
+        
         // Simpan data booking dan update status PC
         if ($this->Booking_model->insert_booking($data)) {
             $this->Pc_model->update_pc_status($input['pc_id'], 'in use');
@@ -97,78 +99,81 @@ class Booking extends CI_Controller {
         // Redirect kembali ke halaman booking
         redirect('admin/booking');
     }
-    
-
 
     public function edit($id)
     {
         $data['booking'] = $this->Booking_model->get_booking_by_id($id);
         if (!$data['booking']) {
-            $this->session->set_flashdata('error', 'Booking not found.');
+            $this ->session->set_flashdata('error', 'Booking tidak ditemukan.');
             redirect('admin/booking');
+            return;
         }
-        $data['pcs'] = $this->Pc_model->getAllPc();
+        $data['pcs'] = $this->Pc_model->getAvailablePc();
         $data['makanan'] = $this->Makanan_model->getAllMakananWithStock();
         $this->load->view('admin/booking/edit', $data);
     }
 
     public function update($id)
     {
+        // Ambil data dari form input
         $input = $this->input->post();
-        $pc = $this->Pc_model->getPcById($input['pc_id']);
-        $makanan = $this->Makanan_model->get_food_by_id($input['jajanan']);
 
-        $harga_pc = 3000;
-        $harga_jajanan = $makanan['harga_makanan'] ?? 0;
-        $harga_total = ($harga_pc * $input['lama_menyewa']) + $harga_jajanan;
-
-        // Hitung `end_time` sebagai waktu mulai + lama menyewa (jam)
-        $lama_menyewa_dalam_detik = $input['lama_menyewa'] * 3600;
-        $end_time = date('Y-m-d H:i:s', time() + $lama_menyewa_dalam_detik);
-
-        $data = [
-            'nama_penyewa' => $input['nama_penyewa'],
-            'lama_menyewa' => $input['lama_menyewa'],
-            'id_pc' => $input['pc_id'],
-            'harga_sewa' => $harga_pc * $input['lama_menyewa'],
-            'harga_makanan' => $harga_jajanan,
-            'jajanan' => $input['jajanan'],
-            'harga_total' => $harga_total,
-            'end_time' => $end_time
-        ];
-
-        if ($this->Booking_model->update_booking($id, $data)) {
-            $this->Pc_model->update_pc_status($input['pc_id'], 'in use');
-            $this->Makanan_model->reduce_stock($input['jajanan'], 1);
-            $this->session->set_flashdata('success', 'Booking successfully updated.');
-        } else {
-            $this->session->set_flashdata('error', 'Failed to update booking.');
+        // Validasi input dasar
+        if (empty($input['lama_menyewa']) || empty($input['pc_id']) || empty($input['nama_penyewa'])) {
+            $this->session->set_flashdata('error', 'Harap isi semua data yang diperlukan.');
+            redirect('admin/booking/edit/' . $id);
+            return;
         }
 
+        // Ambil data booking yang ada
+        $booking = $this->Booking_model->get_booking_by_id($id);
+        if (!$booking) {
+            $this->session->set_flashdata('error', 'Booking tidak ditemukan.');
+            redirect('admin/booking');
+            return;
+        }
+
+        // Update data booking
+        $lama_menyewa = (int)$input['lama_menyewa'];
+        $harga_pc = 3000; // Harga sewa per jam
+        $harga_total = ($harga_pc * $lama_menyewa);
+
+        $data = [
+            'nama_penyewa'   => $input['nama_penyewa'],
+            'lama_menyewa'   => $lama_menyewa,
+            'id_pc'          => $input['pc_id'],
+            'harga_sewa'     => $harga_pc * $lama_menyewa,
+            'harga_total'    => $harga_total,
+            'updated_at'     => date('Y-m-d H:i:s')
+        ];
+
+        // Simpan perubahan
+        if ($this->Booking_model->update_booking($id, $data)) {
+            $this->session->set_flashdata('success', 'Booking berhasil diperbarui.');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal memperbarui booking.');
+        }
+
+        // Redirect kembali ke halaman booking
         redirect('admin/booking');
     }
 
     public function delete($id)
     {
-        $booking = $this->Booking_model->get_booking_by_id($id);
+        // Hapus booking berdasarkan ID
         if ($this->Booking_model->delete_booking($id)) {
-            $this->Pc_model->update_pc_status($booking['id_pc'], 'Available');
-            $this->session->set_flashdata('success', 'Booking successfully deleted.');
+            $this->session->set_flashdata('success', 'Booking berhasil dihapus.');
         } else {
-            $this->session->set_flashdata('error', 'Failed to delete booking.');
+            $this->session->set_flashdata('error', 'Gagal menghapus booking.');
         }
 
+        // Redirect kembali ke halaman booking
         redirect('admin/booking');
     }
 
     public function update_pc_status()
     {
-        $this->db->where('end_time <', date('Y-m-d H:i:s'));
-        $bookings = $this->db->get('booking_pc')->result_array();
-
-        foreach ($bookings as $booking) {
-            $this->Pc_model->update_pc_status($booking['id_pc'], 'Available');
-            $this->Booking_model->delete_booking($booking['id']);
-        }
+        // Logika untuk memperbarui status PC
+        $this->Pc_model->update_all_pc_status();
     }
 }
