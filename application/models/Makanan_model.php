@@ -4,6 +4,30 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Makanan_model extends CI_Model {
 
     /**
+     * Get all food records with stock greater than 0
+     * @return array
+     */
+    public function getAllMakananWithStock()
+    {
+        $this->db->where('stok_makanan >', 0);
+        return $this->db->get('makanan')->result_array();
+    }
+
+    /**
+     * Reduce the stock of a food item
+     * @param int $id
+     * @param int $quantity
+     * @return bool
+     */
+    public function reduce_stock($id, $quantity)
+    {
+        // Mengurangi stock_makanan dengan quantity yang dipesan
+        $this->db->set('stok_makanan', 'stok_makanan - ' . (int)$quantity, FALSE);
+        $this->db->where('id_makanan', $id);
+        return $this->db->update('makanan');
+    }
+
+    /**
      * Get all food records
      * @return array
      */
@@ -19,7 +43,7 @@ class Makanan_model extends CI_Model {
      */
     public function get_food_by_id($id)
     {
-        $this->db->where('id_makanan', $id); // Adjust 'id_makanan' to match your table's column name
+        $this->db->where('id_makanan', $id);
         return $this->db->get('makanan')->row_array();
     }
 
@@ -74,6 +98,6 @@ class Makanan_model extends CI_Model {
      */
     public function delete_makanan($id)
     {
-        return $this->db->delete('makanan', ['id_makanan' => $id]);
+        return $this->db->delete('m akanan', ['id_makanan' => $id]);
     }
 }

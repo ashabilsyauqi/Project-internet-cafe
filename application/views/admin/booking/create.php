@@ -80,10 +80,10 @@
             </select>
         </div>
 
-        <div class="form-group">
+        <!-- <div class="form-group">
     <label for="tanggal_booking">Tanggal Booking:</label>
     <input type="date" name="tanggal_booking" required>
-</div>
+</div> -->
 
 
 <div class="form-group">
