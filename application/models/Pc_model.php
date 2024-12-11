@@ -3,8 +3,15 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Pc_model extends CI_Model
 {
+    // Mendapatkan PC yang memiliki status 'Available'
+    public function getAvailablePc()
+    {
+        $this->db->where('status_pc', 'Available'); // Filter untuk status 'Available'
+        $query = $this->db->get('pc'); // Menjalankan query untuk tabel 'pc'
+        return $query->result_array(); // Mengembalikan hasil query sebagai array
+    }
 
-
+    // Mengupdate status PC
     public function update_pc_status($id_pc, $status)
     {
         $data = [
@@ -15,55 +22,46 @@ class Pc_model extends CI_Model
         return $this->db->update('PC', $data); // Update status PC di tabel pc
     }
 
+    // Mengambil semua data PC
+   // Mengambil semua data PC termasuk statusnya
+public function getAllPc()
+{
+    $query = $this->db->get('pc'); // Mendapatkan semua data dari tabel pc
+    return $query->result_array(); // Mengembalikan hasil query sebagai array
+}
 
-    public function getAvailablePc()
-    {
-        $this->db->where('status_pc', 'Available');
-        $query = $this->db->get('PC');
-        
-        // Debugging
-        if ($query->num_rows() > 0) {
-            return $query->result_array(); // Mengembalikan hasil sebagai array
-        } else {
-            // Jika tidak ada PC yang available
-            log_message('debug', 'Tidak ada PC yang tersedia.');
-            return []; // Mengembalikan array kosong
-        }
-    }
-    
-
+// Mengambil data PC yang memiliki status tertentu
+public function getPcByStatus($status)
+{
+    $this->db->where('status_pc', $status); // Filter berdasarkan status
+    $query = $this->db->get('pc');
+    return $query->result_array(); // Mengembalikan hasil query sebagai array
+}
 
 
-
-    // Fetch all PCs
-    public function getAllPc()
-    {
-        return $this->db->get('PC')->result_array();  // Using "PC" as table name
-    }
-
-    // Create new PC
+    // Menambahkan PC baru
     public function createPc($data)
     {
-        return $this->db->insert('PC', $data);  // Using "PC" as table name
+        return $this->db->insert('PC', $data); // Menambahkan data ke tabel 'PC'
     }
 
-    // Get single PC by ID
+    // Mendapatkan PC berdasarkan ID
     public function getPcById($id_pc)
     {
-        return $this->db->get_where('PC', ['id_pc' => $id_pc])->row_array();  // Using "PC" as table name
+        return $this->db->get_where('PC', ['id_pc' => $id_pc])->row_array(); // Mendapatkan data PC berdasarkan id
     }
 
-    // Update PC data
+    // Mengupdate data PC
     public function updatePc($id_pc, $data)
     {
         $this->db->where('id_pc', $id_pc);
-        return $this->db->update('PC', $data);  // Using "PC" as table name
+        return $this->db->update('PC', $data); // Mengupdate data PC di tabel 'PC'
     }
 
-    // Delete PC
+    // Menghapus PC
     public function deletePc($id_pc)
     {
         $this->db->where('id_pc', $id_pc);
-        return $this->db->delete('PC');  // Using "PC" as table name
+        return $this->db->delete('PC'); // Menghapus data PC di tabel 'PC'
     }
 }

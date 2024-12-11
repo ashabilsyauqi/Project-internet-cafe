@@ -9,6 +9,13 @@ class Pc extends CI_Controller
         $this->load->model('Pc_model');
     }
     
+      // Method untuk mengambil data PC dengan status 'Available'
+      public function get_available_pcs()
+      {
+          $this->db->where('status', 'Available');  // Memfilter data berdasarkan status 'Available'
+          $query = $this->db->get('pc');  // Menjalankan query ke tabel pc
+          return $query->result_array();  // Mengembalikan hasil sebagai array
+      }
 
     // List all PCs
     public function index()

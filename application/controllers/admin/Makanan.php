@@ -7,10 +7,11 @@ class Makanan extends CI_Controller {
     {
         parent::__construct();
         $this->load->model('Makanan_model');
-        $this->load->helper('form'); // Load the form helper here
-        $this->load->library('upload'); // Load the upload library here
+        $this->load->helper('form');
+        $this->load->library('upload');
+        $this->load->library('form_validation');
     }
-
+    
     public function index()
     {
         $data['makanan'] = $this->Makanan_model->getAllMakanan();
@@ -24,43 +25,50 @@ class Makanan extends CI_Controller {
 
     public function store()
     {
-        // Set up file upload config
-        $config['upload_path']          = './uploads/';
-        $config['allowed_types']        = 'png|jpg|gif';
-        $config['max_size']             = 2048;
-
-        $this->upload->initialize($config);
-
-        if ( ! $this->upload->do_upload('foto_makanan')) {
-            $error = array('error' => $this->upload->display_errors());
-            $this->load->view('admin/makanan/create', $error);
+        // Set validation rules
+        $this->form_validation->set_rules('nama_makanan', 'Nama Makanan', 'required');
+        $this->form_validation->set_rules('harga_beli', 'Harga Beli', 'required|numeric');
+        $this->form_validation->set_rules('harga_makanan', 'Harga Makanan', 'required|numeric');
+        $this->form_validation->set_rules('stok_makanan', 'Stok Makanan', 'required|numeric');
+        
+        if ($this->form_validation->run() == FALSE) {
+            $this->load->view('admin/makanan/create');
         } else {
-            // Get file upload data
-            $upload_data = $this->upload->data();
-            $foto = $upload_data['file_name'];
-
-            // Get data from form
-            $data = array(
-                'nama_makanan' => $this->input->post('nama_makanan'),
-                'harga_beli'   => $this->input->post('harga_beli'),
-                'harga_makanan'=> $this->input->post('harga_makanan'),
-                'stok_makanan' => $this->input->post('stok_makanan'),
-                'foto_makanan' => $foto,
-                'margin_makanan' => $this->calculate_margin(
-                    $this->input->post('harga_beli'),
-                    $this->input->post('harga_makanan')
-                ),
-            );
-
-            // Insert into database using Makanan_model
-            $insert = $this->Makanan_model->insert_makanan($data);
-            if ($insert) {
-                redirect('admin/makanan');
+            // Set upload configuration
+            $config['upload_path'] = './uploads/';
+            $config['allowed_types'] = 'jpg|jpeg|png|gif';
+            $config['max_size'] = 2048; 
+            $config['file_name'] = uniqid();
+        
+            $this->upload->initialize($config);
+        
+            if (!$this->upload->do_upload('foto_makanan')) {
+                $data['error'] = $this->upload->display_errors();
+                $this->load->view('admin/makanan/create', $data);
             } else {
-                echo "Gagal Menyimpan Data!";
+                $upload_data = $this->upload->data();
+        
+                // Calculate margin_makanan (harga_makanan - harga_beli)
+                $margin_makanan = $this->input->post('harga_makanan') - $this->input->post('harga_beli');
+        
+                // Prepare data for insertion
+                $data = array(
+                    'nama_makanan' => $this->input->post('nama_makanan'),
+                    'harga_beli' => $this->input->post('harga_beli'),
+                    'harga_makanan' => $this->input->post('harga_makanan'),
+                    'stok_makanan' => $this->input->post('stok_makanan'),
+                    'foto_makanan' => $upload_data['file_name'],
+                    'margin_makanan' => $margin_makanan // Store margin_makanan
+                );
+        
+                // Insert data into database
+                $this->Makanan_model->insert_makanan($data);
+        
+                redirect('admin/makanan');
             }
         }
     }
+    
 
     public function edit($id)
     {
@@ -71,61 +79,52 @@ class Makanan extends CI_Controller {
     public function update($id)
     {
         // Set up file upload config
-        $config['upload_path']          = './uploads/';
-        $config['allowed_types']        = 'png|jpg|gif';
-        $config['max_size']             = 2048;
-
+        $config['upload_path'] = './uploads/';
+        $config['allowed_types'] = 'jpg|jpeg|png|gif';
+        $config['max_size'] = 2048;
         $this->upload->initialize($config);
-
+    
         // Check if a new file is uploaded, otherwise use the old photo
-        if ( ! $this->upload->do_upload('foto_makanan')) {
-            // If no new file is uploaded, keep the old photo
-            $foto = $this->input->post('old_foto');
-        } else {
-            // If a new file is uploaded, use the new one
+        if (!empty($_FILES['foto_makanan']['name']) && !$this->upload->do_upload('foto_makanan')) {
+            $data['error'] = $this->upload->display_errors();
+            $this->load->view('admin/makanan/edit', $data);
+            return;
+        }
+    
+        $foto = $this->input->post('old_foto');
+        if ($this->upload->do_upload('foto_makanan')) {
             $upload_data = $this->upload->data();
             $foto = $upload_data['file_name'];
         }
-
-        // Get data from form and calculate margin
+    
+        // Calculate margin_makanan (harga_makanan - harga_beli)
+        $margin_makanan = $this->input->post('harga_makanan') - $this->input->post('harga_beli');
+    
+        // Get data from form
         $data = array(
             'nama_makanan' => $this->input->post('nama_makanan'),
             'harga_beli'   => $this->input->post('harga_beli'),
             'harga_makanan'=> $this->input->post('harga_makanan'),
             'stok_makanan' => $this->input->post('stok_makanan'),
             'foto_makanan' => $foto,
-            'margin_makanan' => $this->calculate_margin(
-                $this->input->post('harga_beli'),
-                $this->input->post('harga_makanan')
-            ),
+            'margin_makanan' => $margin_makanan // Update margin_makanan
         );
-
-        // Update data in database using Makanan_model
-        $update = $this->Makanan_model->update_makanan($id, $data);
-        if ($update) {
-            redirect('admin/makanan');
-        } else {
-            echo "Gagal Mengupdate Data!";
-        }
+    
+        $this->Makanan_model->update_makanan($id, $data);
+        redirect('admin/makanan');
     }
+    
 
     public function delete($id)
     {
         $makanan = $this->Makanan_model->get_makanan_by_id($id);
         $foto = './uploads/' . $makanan->foto_makanan;
 
-        // Delete the image file
         if (is_readable($foto) && unlink($foto)) {
-            $delete = $this->Makanan_model->delete_makanan($id);
+            $this->Makanan_model->delete_makanan($id);
             redirect('admin/makanan');
         } else {
             echo "Gagal Menghapus Foto!";
         }
-    }
-
-    private function calculate_margin($harga_beli, $harga_jual)
-    {
-        // Calculate margin based on harga_beli and harga_jual
-        return ($harga_jual - $harga_beli);
     }
 }

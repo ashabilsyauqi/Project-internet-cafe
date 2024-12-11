@@ -19,18 +19,27 @@ class Booking extends CI_Controller {
 
     public function create()
     {
-        // Ambil daftar PC yang statusnya 'Available'
-        $data['pcs'] = $this->Pc_model->getAvailablePc();
-
-        // Debugging
-        log_message('debug', 'Daftar PC yang tersedia: ' . print_r($data['pcs'], true));
-
-        // Ambil semua makanan yang memiliki stock lebih dari 0
-        $data['makanan'] = $this->Makanan_model->getAllMakananWithStock();
-
-        // Load the view dengan data pcs dan makanan
+        // Mengambil semua PC termasuk yang statusnya in use
+        $pcs = $this->Pc_model->getAllPc(); // Ini akan mengambil semua data PC dengan status apa pun
+    
+        // Mengambil data makanan dari model
+        $makanan = $this->Makanan_model->getAllMakanan();
+        
+        // Filter makanan dengan stok < 1
+        $makanan_filtered = array_filter($makanan, function($item) {
+            return $item->stok_makanan > 1;  // Pastikan stok makanan cukup
+        });
+        
+        // Kirim data ke view
+        $data['pcs'] = $pcs;
+        $data['makanan'] = $makanan_filtered; // Mengirimkan data yang sudah difilter
+        
         $this->load->view('admin/booking/create', $data);
     }
+    
+    
+    
+    
 
     public function store()
     {

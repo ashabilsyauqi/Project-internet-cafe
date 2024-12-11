@@ -3,101 +3,103 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Makanan_model extends CI_Model {
 
-    /**
-     * Get all food records with stock greater than 0
-     * @return array
-     */
-    public function getAllMakananWithStock()
+    public function __construct()
     {
-        $this->db->where('stok_makanan >', 0);
-        return $this->db->get('makanan')->result_array();
+        parent::__construct();
     }
 
-    /**
-     * Reduce the stock of a food item
-     * @param int $id
-     * @param int $quantity
-     * @return bool
-     */
-    public function reduce_stock($id, $quantity)
-    {
-        // Mengurangi stock_makanan dengan quantity yang dipesan
-        $this->db->set('stok_makanan', 'stok_makanan - ' . (int)$quantity, FALSE);
-        $this->db->where('id_makanan', $id);
-        return $this->db->update('makanan');
-    }
-
-    /**
-     * Get all food records
-     * @return array
-     */
+    // Menampilkan semua makanan dari tabel makanan
     public function getAllMakanan()
     {
-        return $this->db->get('makanan')->result_array();
+        // Mengambil data makanan yang stoknya kurang dari 1
+        $this->db->where('stok_makanan >', 1);  // Ubah kondisi menjadi kurang dari 1
+        return $this->db->get('makanan')->result();
     }
+    
+    
 
-    /**
-     * Get a food record by ID
-     * @param int $id
-     * @return array|null
-     */
-    public function get_food_by_id($id)
-    {
-        $this->db->where('id_makanan', $id);
-        return $this->db->get('makanan')->row_array();
-    }
-
-    /**
-     * Get the total price of selected foods
-     * @param array $ids
-     * @return int
-     */
-    public function getTotalHargaMakanan($ids)
-    {
-        $this->db->select_sum('harga_makanan', 'total_harga');
-        $this->db->where_in('id_makanan', $ids);
-        $result = $this->db->get('makanan')->row_array();
-        return isset($result['total_harga']) ? $result['total_harga'] : 0;
-    }
-
-    /**
-     * Get a food record by ID (alternative method)
-     * @param int $id
-     * @return object|null
-     */
-    public function get_makanan_by_id($id)
-    {
-        return $this->db->get_where('makanan', ['id_makanan' => $id])->row();
-    }
-
-    /**
-     * Insert a new food record
-     * @param array $data
-     * @return bool
-     */
+    // Menambahkan data makanan
     public function insert_makanan($data)
     {
-        return $this->db->insert('makanan', $data);
+        $this->db->insert('makanan', $data);
     }
 
-    /**
-     * Update an existing food record
-     * @param int $id
-     * @param array $data
-     * @return bool
-     */
+
+    public function get_food_by_id($id_makanan)
+    {
+        $this->db->where('id_makanan', $id_makanan);
+        $query = $this->db->get('makanan');
+        return $query->row_array(); // Mengambil data makanan berdasarkan ID
+    }
+
+
+
+    // // Mengambil data makanan berdasarkan ID
+    // public function get_makanan_by_id($id)
+    // {
+    //     return $this->db->get_where('makanan', array('id_makanan' => $id))->row();
+    // }
+
+    // Mengupdate data makanan berdasarkan ID
     public function update_makanan($id, $data)
     {
-        return $this->db->update('makanan', $data, ['id_makanan' => $id]);
+        $this->db->where('id_makanan', $id);
+        $this->db->update('makanan', $data);
     }
 
-    /**
-     * Delete a food record
-     * @param int $id
-     * @return bool
-     */
+    // Menghapus data makanan berdasarkan ID
     public function delete_makanan($id)
     {
-        return $this->db->delete('m akanan', ['id_makanan' => $id]);
+        $this->db->where('id_makanan', $id);
+        $this->db->delete('makanan');
     }
+
+    // Menampilkan semua makanan dengan stok yang terkait
+    public function getAllMakananWithStock()
+    {
+        // Ambil data dari tabel makanan dan stok_makanan
+        $this->db->select('makanan.*, makanan.stok_makanan');
+        $this->db->from('makanan');
+        return $this->db->get()->result();
+    }
+    
+    
+
+    // Mengurangi stok makanan
+  // Mengurangi stok makanan
+public function reduce_stock($food_id, $quantity)
+{
+    // Ambil data stok makanan berdasarkan food_id (stok_makanan ada di tabel makanan)
+    $this->db->select('stok_makanan');
+    $this->db->from('makanan');
+    $this->db->where('id_makanan', $food_id); // Asumsi id_makanan adalah food_id di tabel makanan
+    $stock = $this->db->get()->row();
+
+    if ($stock) {
+        $new_stock = $stock->stok_makanan - $quantity;
+
+        // Pastikan stok tidak menjadi negatif
+        if ($new_stock >= 0) {
+            // Update stok jika jumlah cukup
+            $this->db->set('stok_makanan', $new_stock);
+            $this->db->where('id_makanan', $food_id);
+            return $this->db->update('makanan');
+        } else {
+            return false; // Tidak cukup stok
+        }
+    }
+    return false; // Makanan tidak ditemukan
+}
+
+
+
+    //   // Metode untuk mengambil data makanan berdasarkan ID
+    //   public function get_food_by_id($id_makanan)
+    //   {
+    //       // Menjalankan query untuk mengambil data makanan berdasarkan id
+    //       $this->db->where('id_makanan', $id_makanan);
+    //       $query = $this->db->get('makanan');
+    //       return $query->row();  // Mengembalikan satu baris data
+    //   }
+  
 }
