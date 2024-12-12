@@ -94,4 +94,6 @@ $route['admin/booking/bayar'] = 'admin/booking/store_step1';
 
 // Step 2: Form kedua untuk upload bukti pembayaran
 $route['admin/booking/bayar'] = 'admin/booking/create_step2';
+// $route['admin/booking/store_step2'] = 'admin/booking/store_step2';   `
+
 $route['admin/booking/store_bayar'] = 'admin/booking/store_step2';

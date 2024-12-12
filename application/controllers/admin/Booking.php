@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set('Asia/Jakarta');
+
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Booking extends CI_Controller {
@@ -42,11 +44,17 @@ class Booking extends CI_Controller {
         $input = $this->input->post();
         $pc = $this->Pc_model->getPcById($input['pc_id']);
         $makanan = $this->Makanan_model->get_food_by_id($input['jajanan']);
-
+    
         $harga_pc = 3000;
         $harga_jajanan = $makanan['harga_makanan'] ?? 0;
         $harga_total = ($harga_pc * $input['lama_menyewa']) + $harga_jajanan;
-
+    
+        // Ambil waktu saat ini untuk 'created_at'
+        $created_at = date('Y-m-d H:i:s');
+    
+        // Hitung end_time dengan menambahkan lama_menyewa dalam jam
+        $end_time = date('Y-m-d H:i:s', strtotime("+{$input['lama_menyewa']} hours", strtotime($created_at)));
+    
         // Simpan data sementara di session
         $booking_data = [
             'nama_penyewa' => $input['nama_penyewa'],
@@ -56,14 +64,17 @@ class Booking extends CI_Controller {
             'harga_makanan' => $harga_jajanan,
             'jajanan' => $input['jajanan'],
             'harga_total' => $harga_total,
-            'status' => 'pending'
+            'status' => 'pending',
+            'created_at' => $created_at,
+            'end_time' => $end_time // Simpan end_time
         ];
-
+    
         $this->session->set_userdata('booking_data', $booking_data);
-
+    
         // Redirect ke form pembayaran (Step 2)
         redirect('admin/booking/bayar');
     }
+    
 
     // Step 2: Form upload bukti pembayaran
     public function create_step2()
@@ -85,15 +96,15 @@ class Booking extends CI_Controller {
         if (empty($booking_data)) {
             redirect('admin/booking/create');  // Redirect jika tidak ada data
         }
-    
+        
         // Konfigurasi upload bukti pembayaran
         $config['upload_path'] = './uploads/bukti_pembayaran/';
         $config['allowed_types'] = 'jpg|jpeg|png|pdf';
         $config['max_size'] = 2048;  // Maksimal ukuran file 2MB
-    
+        
         // Load library upload
         $this->load->library('upload', $config);
-    
+        
         // Jika upload gagal
         if (!$this->upload->do_upload('bukti_pembayaran')) {
             $error = ['error' => $this->upload->display_errors()];
@@ -104,16 +115,16 @@ class Booking extends CI_Controller {
             $upload_data = $this->upload->data();
             $bukti_pembayaran = $upload_data['file_name'];
         }
-    
+        
         // Menambahkan bukti pembayaran ke data booking
         $booking_data['bukti_pembayaran'] = $bukti_pembayaran;
-    
+        
         // Menyimpan data booking ke database
         if ($this->Booking_model->insert_booking($booking_data)) {
             // Update status PC dan kurangi stock makanan
             $this->Pc_model->update_pc_status($booking_data['id_pc'], 'in use');
             $this->Makanan_model->reduce_stock($booking_data['jajanan'], 1);
-    
+        
             // Menghapus session booking data setelah berhasil
             $this->session->unset_userdata('booking_data');
             $this->session->set_flashdata('success', 'Booking successfully created.');
@@ -121,10 +132,11 @@ class Booking extends CI_Controller {
             // Menampilkan pesan error jika gagal menyimpan data
             $this->session->set_flashdata('error', 'Failed to create booking.');
         }
-    
+        
         // Redirect ke halaman booking setelah selesai
         redirect('admin/booking');
     }
+    
     
     public function edit($id)
     {
