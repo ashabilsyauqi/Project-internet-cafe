@@ -37,11 +37,7 @@ class Booking extends CI_Controller {
         $this->load->view('admin/booking/create', $data);
     }
     
-    
-    
-    
-
-    public function store()
+    public function store_step1()
     {
         $input = $this->input->post();
         $pc = $this->Pc_model->getPcById($input['pc_id']);
@@ -51,33 +47,85 @@ class Booking extends CI_Controller {
         $harga_jajanan = $makanan['harga_makanan'] ?? 0;
         $harga_total = ($harga_pc * $input['lama_menyewa']) + $harga_jajanan;
 
-        // Prepare booking data
-        $data = [
+        // Simpan data sementara di session
+        $booking_data = [
             'nama_penyewa' => $input['nama_penyewa'],
             'lama_menyewa' => $input['lama_menyewa'],
             'id_pc' => $input['pc_id'],
             'harga_sewa' => $harga_pc * $input['lama_menyewa'],
             'harga_makanan' => $harga_jajanan,
             'jajanan' => $input['jajanan'],
-            'harga_total' => $harga_total
+            'harga_total' => $harga_total,
+            'status' => 'pending'
         ];
 
-        // Insert booking and update PC status
-        if ($this->Booking_model->insert_booking($data)) {
-            // Update the PC status to 'in use'
-            $this->Pc_model->update_pc_status($input['pc_id'], 'in use');
+        $this->session->set_userdata('booking_data', $booking_data);
 
-            // Reduce stock of the selected food
-            $this->Makanan_model->reduce_stock($input['jajanan'], 1); // Mengurangi stock sebanyak 1
-
-            $this->session->set_flashdata('success', 'Booking successfully created.');
-        } else {
-            $this->session->set_flashdata('error', 'Failed to create booking.');
-        }
-
-        redirect('admin/booking');
+        // Redirect ke form pembayaran (Step 2)
+        redirect('admin/booking/bayar');
     }
 
+    // Step 2: Form upload bukti pembayaran
+    public function create_step2()
+    {
+        $data['booking_data'] = $this->session->userdata('booking_data');
+        if (empty($data['booking_data'])) {
+            redirect('booking/create_step1'); // Jika belum ada data dari Step 1
+        }
+
+        $this->load->view('admin/booking/bayar', $data);
+    }
+
+    public function store_step2()
+    {
+        // Mengambil data booking dari session
+        $booking_data = $this->session->userdata('booking_data');
+        
+        // Cek apakah data booking ada di session
+        if (empty($booking_data)) {
+            redirect('admin/booking/create');  // Redirect jika tidak ada data
+        }
+    
+        // Konfigurasi upload bukti pembayaran
+        $config['upload_path'] = './uploads/bukti_pembayaran/';
+        $config['allowed_types'] = 'jpg|jpeg|png|pdf';
+        $config['max_size'] = 2048;  // Maksimal ukuran file 2MB
+    
+        // Load library upload
+        $this->load->library('upload', $config);
+    
+        // Jika upload gagal
+        if (!$this->upload->do_upload('bukti_pembayaran')) {
+            $error = ['error' => $this->upload->display_errors()];
+            $this->session->set_flashdata('error', $error['error']);
+            redirect('admin/booking/bayar');  // Redirect ke halaman bayar jika upload gagal
+        } else {
+            // Jika upload berhasil, simpan nama file
+            $upload_data = $this->upload->data();
+            $bukti_pembayaran = $upload_data['file_name'];
+        }
+    
+        // Menambahkan bukti pembayaran ke data booking
+        $booking_data['bukti_pembayaran'] = $bukti_pembayaran;
+    
+        // Menyimpan data booking ke database
+        if ($this->Booking_model->insert_booking($booking_data)) {
+            // Update status PC dan kurangi stock makanan
+            $this->Pc_model->update_pc_status($booking_data['id_pc'], 'in use');
+            $this->Makanan_model->reduce_stock($booking_data['jajanan'], 1);
+    
+            // Menghapus session booking data setelah berhasil
+            $this->session->unset_userdata('booking_data');
+            $this->session->set_flashdata('success', 'Booking successfully created.');
+        } else {
+            // Menampilkan pesan error jika gagal menyimpan data
+            $this->session->set_flashdata('error', 'Failed to create booking.');
+        }
+    
+        // Redirect ke halaman booking setelah selesai
+        redirect('admin/booking');
+    }
+    
     public function edit($id)
     {
         $data['booking'] = $this->Booking_model->get_booking_by_id($id);

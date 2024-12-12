@@ -58,17 +58,39 @@
 </head>
 <body>
 
-    <div class="receipt-card">
-        <h2>Booking Receipt</h2>
-        <p><strong>Nama Penyewa:</strong> John Doe</p>
-        <p><strong>Lama Menyewa:</strong> 3 Jam</p>
-        <p><strong>PC yang Disewa:</strong> PC-01</p>
-        <div class="line"></div>
-        <p><strong>Harga Sewa PC:</strong> Rp 9000</p>
-        <p><strong>Harga Makanan:</strong> Rp 2000</p>
-        <div class="line"></div>
-        <p class="total-price"><strong>Total yang Harus Dibayar:</strong> Rp 11000</p>
+<div class="receipt-card">
+    <h3>Ringkasan Booking</h3>
+    <p>Nama Penyewa: <?= $booking_data['nama_penyewa']; ?></p>
+    <p>Lama Menyewa: <?= $booking_data['lama_menyewa']; ?> jam</p>
+    <p>Total Harga: Rp<?= number_format($booking_data['harga_total'], 0, ',', '.'); ?></p>
+
+    <!-- Form untuk upload bukti pembayaran -->
+    <form method="post" action="<?php echo site_url('admin/booking/store_step2'); ?>" enctype="multipart/form-data">
+        <!-- CSRF Token -->
+        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" 
+               value="<?php echo $this->security->get_csrf_hash(); ?>">
+
+        <!-- Upload Bukti Pembayaran -->
+        <label>Upload Bukti Pembayaran</label>
+        <input type="file" name="bukti_pembayaran" required>
+
+        <button type="submit">Simpan Booking</button>
+    </form>
+</div>
+
+<!-- Menampilkan pesan error atau success -->
+<?php if ($this->session->flashdata('error')): ?>
+    <div class="alert alert-danger">
+        <?php echo $this->session->flashdata('error'); ?>
     </div>
+<?php endif; ?>
+
+<?php if ($this->session->flashdata('success')): ?>
+    <div class="alert alert-success">
+        <?php echo $this->session->flashdata('success'); ?>
+    </div>
+<?php endif; ?>
+
 
 </body>
 </html>

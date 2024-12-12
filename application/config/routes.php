@@ -88,3 +88,10 @@ $route['admin/booking/delete/(:num)'] = 'admin/booking/delete/$1';
 
 
 
+// Step 1: Form pertama untuk input booking
+$route['admin/booking/create'] = 'admin/booking/create';
+$route['admin/booking/bayar'] = 'admin/booking/store_step1';
+
+// Step 2: Form kedua untuk upload bukti pembayaran
+$route['admin/booking/bayar'] = 'admin/booking/create_step2';
+$route['admin/booking/store_bayar'] = 'admin/booking/store_step2';

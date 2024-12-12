@@ -184,7 +184,7 @@
     <div class="container">
         <h1>Hello Pemain Hebat!</h1>
 
-        <form action="<?= base_url('admin/booking/store') ?>" method="post">
+        <form action="<?= base_url('admin/booking/store_step1') ?>" method="post">
             
             <div class="form-group">
                 <label for="nama_penyewa">Nama Penyewa:</label>
