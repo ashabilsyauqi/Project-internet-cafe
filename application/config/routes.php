@@ -52,6 +52,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $route['default_controller'] = 'welcome';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
+
 $route['admin'] = 'admin/overview';
 
 $route['admin/makanan'] = 'admin/makanan/index';
@@ -62,17 +63,10 @@ $route['admin/makanan/edit/(:any)'] = 'admin/makanan/edit/$1';
 $route['admin/makanan/update/(:any)'] = 'admin/makanan/update/$1';
 $route['admin/makanan/delete/(:any)'] = 'admin/makanan/delete/$1';
 
-
-
 $route['admin/pc'] = 'admin/pc/index';
 $route['admin/pc/create'] = 'admin/pc/create';
 $route['admin/pc/edit/(:num)'] = 'admin/pc/edit/$1';
 $route['admin/pc/delete/(:num)'] = 'admin/pc/delete/$1';
-
-
-
-// application/config/routes.php
-
 
 $route['admin/booking'] = 'admin/booking/index';
 $route['booking/create'] = 'admin/booking/create';
@@ -82,11 +76,7 @@ $route['admin/booking/edit/(:num)'] = 'admin/booking/edit/$1';
 $route['admin/booking/update/(:num)'] = 'admin/booking/update/$1';
 $route['admin/booking/delete/(:num)'] = 'admin/booking/delete/$1';
 
-
-
-
-
-
+$route['admin/booking/receipt/(:num)'] = 'admin/Booking/receipt/$1';
 
 // Step 1: Form pertama untuk input booking
 $route['admin/booking/create'] = 'admin/booking/create';
@@ -94,6 +84,6 @@ $route['admin/booking/bayar'] = 'admin/booking/store_step1';
 
 // Step 2: Form kedua untuk upload bukti pembayaran
 $route['admin/booking/bayar'] = 'admin/booking/create_step2';
-// $route['admin/booking/store_step2'] = 'admin/booking/store_step2';   `
 
+// Store bukti pembayaran
 $route['admin/booking/store_bayar'] = 'admin/booking/store_step2';

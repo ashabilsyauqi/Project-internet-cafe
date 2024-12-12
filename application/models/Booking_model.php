@@ -23,11 +23,24 @@ class Booking_model extends CI_Model {
         return $this->db->get()->result_array(); // Ensure it returns an array of bookings
     }
 
-    // Get booking by ID
-    public function get_booking_by_id($id)
-    {
-        return $this->db->get_where('booking_pc', ['id' => $id])->row_array(); // Ensure row is returned for a single booking
-    }
+    // public function get_booking_by_id($id_booking)
+    // {
+    //     $this->db->where('id_booking', $id_booking);
+    //     $query = $this->db->get('booking_pc');
+        
+    //     return $query->row_array();
+    // }
+    
+
+    public function get_booking_by_id($id_booking)
+{
+    // Change 'id_booking' to 'id' to match the actual column name
+    $this->db->where('id', $id_booking);
+    $query = $this->db->get('booking_pc');
+    
+    return $query->row_array();
+}
+
 
     // Insert a new booking
     public function insert_booking($data)

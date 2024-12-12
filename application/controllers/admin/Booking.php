@@ -89,54 +89,76 @@ class Booking extends CI_Controller {
 
     public function store_step2()
     {
-        // Mengambil data booking dari session
+        // Get the booking data from session
         $booking_data = $this->session->userdata('booking_data');
         
-        // Cek apakah data booking ada di session
+        // Check if booking data exists in the session
         if (empty($booking_data)) {
-            redirect('admin/booking/create');  // Redirect jika tidak ada data
+            redirect('admin/booking/create');  // Redirect if no booking data found
         }
         
-        // Konfigurasi upload bukti pembayaran
+        // Configure the file upload
         $config['upload_path'] = './uploads/bukti_pembayaran/';
         $config['allowed_types'] = 'jpg|jpeg|png|pdf';
-        $config['max_size'] = 2048;  // Maksimal ukuran file 2MB
+        $config['max_size'] = 2048;  // Max file size 2MB
         
-        // Load library upload
+        // Load the upload library
         $this->load->library('upload', $config);
         
-        // Jika upload gagal
+        // If upload fails
         if (!$this->upload->do_upload('bukti_pembayaran')) {
             $error = ['error' => $this->upload->display_errors()];
             $this->session->set_flashdata('error', $error['error']);
-            redirect('admin/booking/bayar');  // Redirect ke halaman bayar jika upload gagal
+            redirect('admin/booking/bayar');  // Redirect to payment page if upload fails
         } else {
-            // Jika upload berhasil, simpan nama file
+            // If upload succeeds, save the file name
             $upload_data = $this->upload->data();
             $bukti_pembayaran = $upload_data['file_name'];
         }
         
-        // Menambahkan bukti pembayaran ke data booking
+        // Add the proof of payment to the booking data
         $booking_data['bukti_pembayaran'] = $bukti_pembayaran;
         
-        // Menyimpan data booking ke database
+        // Save booking data to the database
         if ($this->Booking_model->insert_booking($booking_data)) {
-            // Update status PC dan kurangi stock makanan
+            // Update PC status and reduce food stock
             $this->Pc_model->update_pc_status($booking_data['id_pc'], 'in use');
             $this->Makanan_model->reduce_stock($booking_data['jajanan'], 1);
         
-            // Menghapus session booking data setelah berhasil
+            // Remove booking data from session after successful insertion
             $this->session->unset_userdata('booking_data');
             $this->session->set_flashdata('success', 'Booking successfully created.');
+            
+            // Redirect to the receipt page with the booking ID
+            redirect('admin/booking/receipt/' . $this->db->insert_id());
         } else {
-            // Menampilkan pesan error jika gagal menyimpan data
             $this->session->set_flashdata('error', 'Failed to create booking.');
+            redirect('admin/booking/bayar');
         }
-        
-        // Redirect ke halaman booking setelah selesai
-        redirect('admin/booking');
     }
     
+    
+    public function receipt($id_booking)
+{
+    // Fetch the booking data using the provided ID
+    $booking_data = $this->Booking_model->get_booking_by_id($id_booking);
+
+    if (empty($booking_data)) {
+        $this->session->set_flashdata('error', 'Booking not found.');
+        redirect('admin/booking');  // Redirect if no booking data found
+    }
+
+    // Pass data to the view
+    $data['booking'] = $booking_data;
+    $data['title'] = 'Booking Receipt';
+    
+    // Load the receipt view
+    $this->load->view('admin/booking/receipt', $data);
+}
+
+    
+    
+
     
     public function edit($id)
     {

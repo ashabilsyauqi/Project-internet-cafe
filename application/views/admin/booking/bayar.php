@@ -19,7 +19,7 @@
 
         /* Card styling */
         .receipt-card {
-            width: 300px;
+            width: 350px; /* Increased width for better readability */
             padding: 20px;
             background-color: #fff;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -27,12 +27,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            text-align: center; /* Center text inside the card */
         }
 
-        .receipt-card h2 {
+        .receipt-card h3 {
             font-size: 24px;
             margin-bottom: 15px;
-            text-align: center;
             color: #333;
         }
 
@@ -54,6 +54,60 @@
             border-top: 1px dashed #ddd;
             margin: 10px 0;
         }
+
+        /* Form and button styling */
+        form {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        form label {
+            font-size: 16px;
+            color: #555;
+        }
+
+        form input[type="file"] {
+            margin: 10px 0;
+            padding: 8px;
+            width: 100%;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        form button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #2575fc;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        form button:hover {
+            background-color: #6a11cb;
+        }
+
+        /* Alerts */
+        .alert {
+            margin-top: 20px;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
     </style>
 </head>
 <body>
@@ -62,7 +116,16 @@
     <h3>Ringkasan Booking</h3>
     <p>Nama Penyewa: <?= $booking_data['nama_penyewa']; ?></p>
     <p>Lama Menyewa: <?= $booking_data['lama_menyewa']; ?> jam</p>
+    <!-- <p>Nomor Rekening : BCA 32373834 </p>
+    <p>Nomor Rekening : BSI 32423424 </p> -->
+
+
+    
     <p>Total Harga: Rp<?= number_format($booking_data['harga_total'], 0, ',', '.'); ?></p>
+    <br>
+    <br>
+    <p>Nomor Rekening : Mandiri 2342182648923 </p>
+
 
     <!-- Form untuk upload bukti pembayaran -->
     <form method="post" action="<?php echo site_url('admin/booking/store_step2'); ?>" enctype="multipart/form-data">
@@ -90,7 +153,6 @@
         <?php echo $this->session->flashdata('success'); ?>
     </div>
 <?php endif; ?>
-
 
 </body>
 </html>
