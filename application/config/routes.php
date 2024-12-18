@@ -70,7 +70,7 @@ $route['admin/pc/edit/(:num)'] = 'admin/pc/edit/$1';
 $route['admin/pc/delete/(:num)'] = 'admin/pc/delete/$1';
 
 // Booking Routes
-$route['admin/booking'] = 'admin/booking/index';
+$route['/booking'] = 'admin/booking/index';
 $route['admin/booking/create'] = 'admin/booking/create';
 $route['admin/booking/store'] = 'admin/booking/store';
 $route['admin/booking/edit/(:num)'] = 'admin/booking/edit/$1';
@@ -79,7 +79,8 @@ $route['admin/booking/delete/(:num)'] = 'admin/booking/delete/$1';
 $route['admin/booking/receipt/(:num)'] = 'admin/booking/receipt/$1';
 
 // Step 1: Form pertama untuk input booking
-$route['admin/booking/bayar'] = 'admin/booking/create_step2';
+$route['booking/bayar'] = 'admin/booking/create_step2';
 
 // Store bukti pembayaran
-$route['admin/booking/store_bayar'] = 'admin/booking/store_step2';
+$route['booking/store_bayar'] = 'admin/booking/store_step2';
+

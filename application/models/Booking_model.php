@@ -33,19 +33,26 @@ class Booking_model extends CI_Model {
     }
 
     // Insert a new booking
+    // public function insert_booking($data)
+    // {
+    //     log_message('info', 'Data yang akan di-insert: ' . print_r($data, true));
+    
+    //     $insert = $this->db->insert('booking_pc', $data);
+    
+    //     if (!$insert) {
+    //         log_message('error', 'Insert Error: ' . $this->db->last_query());
+    //         log_message('error', 'DB Error: ' . $this->db->error()['message']);
+    //     }
+    
+    //     return $insert;
+    // }
+
     public function insert_booking($data)
     {
-        log_message('info', 'Data yang akan di-insert: ' . print_r($data, true));
-    
-        $insert = $this->db->insert('booking_pc', $data);
-    
-        if (!$insert) {
-            log_message('error', 'Insert Error: ' . $this->db->last_query());
-            log_message('error', 'DB Error: ' . $this->db->error()['message']);
-        }
-    
-        return $insert;
+        $this->db->insert('booking_pc', $data);
+        return $this->db->insert_id(); // Mengembalikan ID dari booking yang baru saja disimpan
     }
+
 
     // Update an existing booking
     public function update_booking($id, $data)

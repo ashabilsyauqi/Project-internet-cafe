@@ -72,7 +72,7 @@ class Booking extends CI_Controller {
     $this->session->set_userdata('booking_data', $booking_data);
 
     // Redirect ke form pembayaran (Step 2)
-    redirect('admin/booking/bayar');
+    redirect('booking/bayar');
 }
 
     // Step 2: Form upload bukti pembayaran
@@ -85,87 +85,61 @@ class Booking extends CI_Controller {
 
         $this->load->view('admin/booking/bayar', $data);
     }
-
     public function store_step2()
     {
-        // Get the booking data from session
-        $booking_data = $this->session->userdata('booking_data');
-        
-        // Check if booking data exists in the session
-        if (empty($booking_data)) {
-            redirect('admin/booking/create');  // Redirect if no booking data found
-        }
-        
-        // Configure the file upload
-        $config['upload_path'] = './uploads/bukti_pembayaran/';
+        // Proses upload bukti pembayaran
+        $config['upload_path'] = './uploads/';
         $config['allowed_types'] = 'jpg|jpeg|png|pdf';
-        $config['max_size'] = 2048;  // Max file size 2MB
-        
-        // Load the upload library
+        $config['max_size'] = 2048; // Maksimal 2MB
+    
         $this->load->library('upload', $config);
-        
-        // If upload fails
-        if (!$this->upload->do_upload('bukti_pembayaran')) {
-            $error = ['error' => $this->upload->display_errors()];
-            $this->session->set_flashdata('error', $error['error']);
-            redirect('admin/booking/bayar');  // Redirect to payment page if upload fails
-        } else {
-            // If upload succeeds, save the file name
+    
+        if ($this->upload->do_upload('bukti_pembayaran')) {
             $upload_data = $this->upload->data();
             $bukti_pembayaran = $upload_data['file_name'];
-        }
-        
-        // Add the proof of payment to the booking data
-        $booking_data['bukti_pembayaran'] = $bukti_pembayaran;
-        
-        // Save booking data to the database
-        if ($this->Booking_model->insert_booking($booking_data)) {
-            // Update PC status and reduce food stock
-            $this->Pc_model->update_pc_status($booking_data['id_pc'], 'in use');
-            $this->Makanan_model->reduce_stock($booking_data['jajanan'], 1);
-        
-            // Remove booking data from session after successful insertion
+    
+            // Simpan data booking ke database
+            $booking_data = $this->session->userdata('booking_data');
+            $booking_data['bukti_pembayaran'] = $bukti_pembayaran;
+    
+            // Panggil model untuk menyimpan data
+            $booking_id = $this->Booking_model->insert_booking($booking_data); // Pastikan insert_booking mengembalikan ID
+    
+            // Hapus data booking dari session
             $this->session->unset_userdata('booking_data');
-            $this->session->set_flashdata('success', 'Booking successfully created.');
-            
-            // Redirect to the receipt page with the booking ID
-            redirect('admin/booking/receipt/' . $this->db->insert_id());
+    
+            // Redirect ke halaman receipt dengan ID booking
+            redirect('admin/booking/receipt/' . $booking_id);
         } else {
-            $this->session->set_flashdata('error', 'Failed to create booking.');
+            // Jika gagal upload, tampilkan error
+            $error = $this->upload->display_errors();
+            $this->session->set_flashdata('error', $error);
             redirect('admin/booking/bayar');
         }
     }
     
+    
+    
+    
     public function receipt($id_booking)
-    {
-        // Fetch the booking data using the provided ID
-        $booking_data = $this->Booking_model->get_booking_by_id($id_booking);
-    
-        if (empty($booking_data)) {
-            $this->session->set_flashdata('error', 'Booking not found.');
-            redirect('admin/booking');  // Redirect if no booking data found
-        }
-    
-        // Pass data to the view
-        $data['booking_data'] = $booking_data; // Ganti 'booking' dengan 'booking_data'
-        $data['title'] = 'Booking Receipt';
-        
-        // Load the receipt view
-        $this->load->view('admin/booking/receipt', $data);
+{
+    // Fetch the booking data using the provided ID
+    $booking_data = $this->Booking_model->get_booking_by_id($id_booking);
+
+    if (empty($booking_data)) {
+        $this->session->set_flashdata('error', 'Booking not found.');
+        redirect('admin/booking');  // Redirect if no booking data found
     }
 
-    public function edit($id)
-    {
-        $data['booking'] = $this->Booking_model->get_booking_by_id($id);
-        if (!$data['booking']) {
-            $this->session->set_flashdata('error', 'Booking not found.');
-            redirect('admin/booking');
-        }
-        $data['pcs'] = $this->Pc_model->getAllPc();
-        $data['makanan'] = $this->Makanan_model->getAllMakananWithStock();
-        $this->load->view('admin/booking/edit', $data);
-    }
+    // Pass data to the view
+    $data['booking_data'] = $booking_data; // Ganti 'booking' dengan 'booking_data'
+    $data['title'] = 'Booking Receipt';
+    
+    // Load the receipt view
+    $this->load->view('admin/booking/receipt', $data);
+}
 
+    
     public function update($id)
     {
         $input = $this->input->post();
