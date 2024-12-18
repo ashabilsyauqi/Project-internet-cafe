@@ -4,155 +4,191 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Receipt</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Full viewport height with gradient background */
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
+        body {
+            background: linear-gradient(to right, #4e73df, #1cc88a);
+            color: white;
+            font-family: Arial, sans-serif;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(to right, #6a11cb, #2575fc); /* Gradient background */
-            font-family: Arial, sans-serif;
+            margin: 0;
         }
 
-        /* Card styling */
         .receipt-card {
-            width: 350px; /* Increased width for better readability */
+            width: 350px;
             padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            text-align: center; /* Center text inside the card */
+            text-align: left;
         }
 
         .receipt-card h3 {
             font-size: 24px;
             margin-bottom: 15px;
             color: #333;
+            text-align: center;
         }
 
-        .receipt-card p {
-            margin: 5px 0;
-            font-size: 16px;
-            color: #555;
+        .table {
+            width: 100%;
+            margin-top: 10px;
         }
 
-        .receipt-card .total-price {
+        .table td {
+            padding: 5px;
+            text-align: left;
+        }
+
+        .total-price {
             margin-top: 15px;
             font-size: 18px;
             font-weight: bold;
-            color: #2ecc71; /* Green color for total price */
+            color: #2ecc71;
         }
 
-        .receipt-card .line {
-            width: 100%;
-            border-top: 1px dashed #ddd;
-            margin: 10px 0;
-        }
-
-        /* Form and button styling */
         form {
             width: 100%;
             margin-top: 20px;
         }
 
-        form label {
-            font-size: 16px;
-            color: #555;
-        }
-
-        form input[type="file"] {
-            margin: 10px 0;
-            padding: 8px;
-            width: 100%;
-            font-size: 14px;
-            border: 1px solid #ccc;
+        .drop-area {
+            border: 2px dashed #1cc88a;
             border-radius: 5px;
-        }
-
-        form button {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #2575fc;
-            border: none;
-            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 10px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
 
-        form button:hover {
-            background-color: #6a11cb;
+        .drop-area:hover {
+            background-color: #e0f7e0; /* Light green on hover */
         }
 
-        /* Alerts */
-        .alert {
-            margin-top: 20px;
+        .drop-area p {
+            margin: 0;
+            color: #555;
+        }
+
+        button {
+            background-color: #1cc88a;
+            color: white;
+            border: none;
             padding: 10px;
-            text-align: center;
             border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: background-color 0.3s;
         }
 
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
+        button:hover {
+            background-color: #17a673;
         }
     </style>
 </head>
 <body>
 
 <div class="receipt-card">
-    <h3>Ringkasan Booking</h3>
-    <p>Nama Penyewa: <?= $booking_data['nama_penyewa']; ?></p>
-    <p>Lama Menyewa: <?= $booking_data['lama_menyewa']; ?> jam</p>
-    <!-- <p>Nomor Rekening : BCA 32373834 </p>
-    <p>Nomor Rekening : BSI 32423424 </p> -->
+    <h3>Detail Pemesanan</h3>
+    <table class="table">
+        <tr>
+            <td>Sewa</td>
+            <td>:</td>
+            <td><?= $booking_data['lama_menyewa']; ?> Jam</td>
+            <td>Rp<?= number_format($booking_data['harga_sewa'], 0, ',', '.'); ?></td>
+        </tr>
+        <tr>
+            <td>Jajanan</td>
+            <td>:</td>
+            <td><?= $booking_data['nama_makanan']; ?></td>
+            <td>Rp<?= number_format($booking_data['harga_makanan'], 0, ',', '.'); ?></td>
+        </tr>
+    </table>
 
+    <p class="total-price">Total Harga: Rp<?= number_format($booking_data['harga_total'], 0, ',', '.'); ?></p>
+    <p>Nomor Rekening: Mandiri 2342182648923</p>
 
-    
-    <p>Total Harga: Rp<?= number_format($booking_data['harga_total'], 0, ',', '.'); ?></p>
-    <br>
-    <br>
-    <p>Nomor Rekening : Mandiri 2342182648923 </p>
-
-
-    <!-- Form untuk upload bukti pembayaran -->
     <form method="post" action="<?php echo site_url('admin/booking/store_step2'); ?>" enctype="multipart/form-data">
-        <!-- CSRF Token -->
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" 
                value="<?php echo $this->security->get_csrf_hash(); ?>">
-
-        <!-- Upload Bukti Pembayaran -->
         <label>Upload Bukti Pembayaran</label>
-        <input type="file" name="bukti_pembayaran" required>
-
+        <div class="drop-area" id="drop-area">
+            <p>Drag & Drop files here</p>
+            <p>or</p>
+            <p><button type="button" id="browse-button">Browse Files</button></p>
+            <input type="file" name="bukti_pembayaran" id="fileElem" required style="display:none;">
+        </div>
         <button type="submit">Simpan Booking</button>
     </form>
 </div>
 
-<!-- Menampilkan pesan error atau success -->
-<?php if ($this->session->flashdata('error')): ?>
-    <div class="alert alert-danger">
-        <?php echo $this->session->flashdata('error'); ?>
-    </div>
-<?php endif; ?>
+<script>
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('fileElem');
+    const browseButton = document.getElementById('browse-button');
 
-<?php if ($this->session->flashdata('success')): ?>
-    <div class="alert alert-success">
-        <?php echo $this->session->flashdata('success'); ?>
-    </div>
-<?php endif; ?>
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+
+    // Remove highlight when item is no longer hovering
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    // Handle dropped files
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    // Open file dialog when clicking the button
+    browseButton.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Handle file selection
+    fileInput.addEventListener('change', (event) => {
+        const files = event.target.files;
+        handleFiles(files);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function highlight() {
+        dropArea.classList.add('highlight');
+    }
+
+    function unhighlight() {
+        dropArea.classList.remove('highlight');
+    }
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    function handleFiles(files) {
+        // You can add file handling logic here if needed
+        console.log(files);
+    }
+</script>
 
 </body>
 </html>

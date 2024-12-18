@@ -4,14 +4,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Booking_model extends CI_Model {
 
     public function get_all_pcs()
-{
-    $this->db->select('id_pc, nomor_pc'); // Mengambil id dan nomor pc
-    $this->db->from('PC'); // Tabel PC
-    return $this->db->get()->result_array();
-}
-
-
-
+    {
+        $this->db->select('id_pc, nomor_pc'); // Mengambil id dan nomor pc
+        $this->db->from('PC'); // Tabel PC
+        return $this->db->get()->result_array();
+    }
 
     // Get all bookings with the necessary details
     public function get_all_bookings()
@@ -23,24 +20,17 @@ class Booking_model extends CI_Model {
         return $this->db->get()->result_array(); // Ensure it returns an array of bookings
     }
 
-    // public function get_booking_by_id($id_booking)
-    // {
-    //     $this->db->where('id_booking', $id_booking);
-    //     $query = $this->db->get('booking_pc');
-        
-    //     return $query->row_array();
-    // }
-    
-
     public function get_booking_by_id($id_booking)
-{
-    // Change 'id_booking' to 'id' to match the actual column name
-    $this->db->where('id', $id_booking);
-    $query = $this->db->get('booking_pc');
-    
-    return $query->row_array();
-}
-
+    {
+        // Mengambil data booking dan nama makanan
+        $this->db->select('booking_pc.*, makanan.nama_makanan');
+        $this->db->from('booking_pc');
+        $this->db->join('makanan', 'booking_pc.jajanan = makanan.id_makanan', 'left'); // Melakukan join dengan tabel makanan
+        $this->db->where('booking_pc.id', $id_booking); // Menggunakan nama kolom yang benar
+        $query = $this->db->get();
+        
+        return $query->row_array(); // Mengembalikan satu baris data
+    }
 
     // Insert a new booking
     public function insert_booking($data)
@@ -56,8 +46,6 @@ class Booking_model extends CI_Model {
     
         return $insert;
     }
-    
-    
 
     // Update an existing booking
     public function update_booking($id, $data)

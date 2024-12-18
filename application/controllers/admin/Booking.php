@@ -38,43 +38,42 @@ class Booking extends CI_Controller {
         
         $this->load->view('admin/booking/create', $data);
     }
-    
     public function store_step1()
-    {
-        $input = $this->input->post();
-        $pc = $this->Pc_model->getPcById($input['pc_id']);
-        $makanan = $this->Makanan_model->get_food_by_id($input['jajanan']);
-    
-        $harga_pc = 3000;
-        $harga_jajanan = $makanan['harga_makanan'] ?? 0;
-        $harga_total = ($harga_pc * $input['lama_menyewa']) + $harga_jajanan;
-    
-        // Ambil waktu saat ini untuk 'created_at'
-        $created_at = date('Y-m-d H:i:s');
-    
-        // Hitung end_time dengan menambahkan lama_menyewa dalam jam
-        $end_time = date('Y-m-d H:i:s', strtotime("+{$input['lama_menyewa']} hours", strtotime($created_at)));
-    
-        // Simpan data sementara di session
-        $booking_data = [
-            'nama_penyewa' => $input['nama_penyewa'],
-            'lama_menyewa' => $input['lama_menyewa'],
-            'id_pc' => $input['pc_id'],
-            'harga_sewa' => $harga_pc * $input['lama_menyewa'],
-            'harga_makanan' => $harga_jajanan,
-            'jajanan' => $input['jajanan'],
-            'harga_total' => $harga_total,
-            'status' => 'pending',
-            'created_at' => $created_at,
-            'end_time' => $end_time // Simpan end_time
-        ];
-    
-        $this->session->set_userdata('booking_data', $booking_data);
-    
-        // Redirect ke form pembayaran (Step 2)
-        redirect('admin/booking/bayar');
-    }
-    
+{
+    $input = $this->input->post();
+    $pc = $this->Pc_model->getPcById($input['pc_id']);
+    $makanan = $this->Makanan_model->get_food_by_id($input['jajanan']);
+
+    $harga_pc = 3000;
+    $harga_jajanan = $makanan['harga_makanan'] ?? 0;
+    $harga_total = ($harga_pc * $input['lama_menyewa']) + $harga_jajanan;
+
+    // Ambil waktu saat ini untuk 'created_at'
+    $created_at = date('Y-m-d H:i:s');
+
+    // Hitung end_time dengan menambahkan lama_menyewa dalam jam
+    $end_time = date('Y-m-d H:i:s', strtotime("+{$input['lama_menyewa']} hours", strtotime($created_at)));
+
+    // Simpan data sementara di session
+    $booking_data = [
+        'nama_penyewa' => $input['nama_penyewa'],
+        'lama_menyewa' => $input['lama_menyewa'],
+        'id_pc' => $input['pc_id'],
+        'harga_sewa' => $harga_pc * $input['lama_menyewa'],
+        'harga_makanan' => $harga_jajanan,
+        'jajanan' => $input['jajanan'],
+        'harga_total' => $harga_total,
+        'status' => 'pending',
+        'created_at' => $created_at,
+        'end_time' => $end_time,
+        'nama_makanan' => $makanan['nama_makanan'] ?? 'Tidak ada' // Menambahkan nama makanan
+    ];
+
+    $this->session->set_userdata('booking_data', $booking_data);
+
+    // Redirect ke form pembayaran (Step 2)
+    redirect('admin/booking/bayar');
+}
 
     // Step 2: Form upload bukti pembayaran
     public function create_step2()
@@ -137,29 +136,24 @@ class Booking extends CI_Controller {
         }
     }
     
-    
     public function receipt($id_booking)
-{
-    // Fetch the booking data using the provided ID
-    $booking_data = $this->Booking_model->get_booking_by_id($id_booking);
-
-    if (empty($booking_data)) {
-        $this->session->set_flashdata('error', 'Booking not found.');
-        redirect('admin/booking');  // Redirect if no booking data found
+    {
+        // Fetch the booking data using the provided ID
+        $booking_data = $this->Booking_model->get_booking_by_id($id_booking);
+    
+        if (empty($booking_data)) {
+            $this->session->set_flashdata('error', 'Booking not found.');
+            redirect('admin/booking');  // Redirect if no booking data found
+        }
+    
+        // Pass data to the view
+        $data['booking_data'] = $booking_data; // Ganti 'booking' dengan 'booking_data'
+        $data['title'] = 'Booking Receipt';
+        
+        // Load the receipt view
+        $this->load->view('admin/booking/receipt', $data);
     }
 
-    // Pass data to the view
-    $data['booking'] = $booking_data;
-    $data['title'] = 'Booking Receipt';
-    
-    // Load the receipt view
-    $this->load->view('admin/booking/receipt', $data);
-}
-
-    
-    
-
-    
     public function edit($id)
     {
         $data['booking'] = $this->Booking_model->get_booking_by_id($id);
@@ -185,7 +179,7 @@ class Booking extends CI_Controller {
         // Check if the PC is available for the booking date
         if (!$this->Booking_model->is_pc_available($input['pc_id'], $input['lama_menyewa'], $id)) {
             $this->session->set_flashdata('error', 'PC is already booked for this duration.');
-            redirect(' admin/booking/edit/' . $id);
+            redirect('admin/booking/edit/' . $id);
         }
 
         // Prepare updated booking data
